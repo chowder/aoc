@@ -27,8 +27,8 @@ def main():
         if any(map(lambda ts: all(t < tree for t in ts), s := (l, r, t, b))):
             visible += 1
 
-        score = [sum(1 for _ in takeuntil(lambda t: t < tree, ts)) for ts in s]
-        max_score = max(reduce(mul, score), max_score)
+        score = reduce(mul, (sum(1 for _ in takeuntil(lambda t: t < tree, ts)) for ts in s))
+        max_score = max(score, max_score)
 
     print(visible)
     print(max_score)
