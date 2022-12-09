@@ -23,9 +23,9 @@ def main():
         r = trees[i + 1:(i // width + 1) * width]
         b = trees[i + width::width]
         t = trees[i % width:i:width][::-1]
+        s = (l, r, t, b)
 
-        if any(map(lambda ts: all(t < tree for t in ts), s := (l, r, t, b))):
-            visible += 1
+        visible += any(all(t < tree for t in ts) for ts in s)
 
         score = reduce(mul, (sum(1 for _ in takeuntil(lambda t: t < tree, ts)) for ts in s))
         max_score = max(score, max_score)
