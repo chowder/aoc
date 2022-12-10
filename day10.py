@@ -7,7 +7,7 @@ def main():
     def cycle():
         nonlocal c, r, s, b
         c += 1
-        s += c * r * ((c - 20) % 40 == 0)
+        s += c * r * (c % 40 == 20)
         b.write("#" if abs(c % 40 - 1 - r) <= 1 else " ")
         b.write("\n" if c % 40 == 0 else "")
         
