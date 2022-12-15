@@ -1,4 +1,5 @@
 import re
+from itertools import product
 
 
 def merge_intervals(intervals):
@@ -11,29 +12,26 @@ def merge_intervals(intervals):
     return merged
 
 
-def get_intervals(lines, row):
-    intervals = []
-    for s, b in lines:
-        radius = abs(s[0] - b[0]) + abs(s[1] - b[1])
-        distance = abs(row - s[1])
-        if (width := radius - distance) > 0:
-            intervals.append([s[0] - width, s[0] + width])
-
-    return merge_intervals(intervals)
-
-
 def main():
     with open("inputs/day15.txt") as f:
-        lines = [re.findall(r"x=(-?\d*), y=(-?\d*)", line) for line in f]
-        lines = [((int(s[0]), int(s[1])), (int(b[0]), int(b[1]))) for s, b in lines]
+        lines = [tuple(map(int, re.findall(r"=(-?\d*)", line))) for line in f]
 
-    occupied = sum(i[1] - i[0] for i in merge_intervals(get_intervals(lines, 2000000)))
+    radii = {(sx, sy): abs(sx - bx) + abs(sy - by) for sx, sy, bx, by in lines}
+    intervals = [[sx - width, sx + width] for sx, sy, bx, by in lines if (width := (radii[sx, sy] - abs(2000000 - sy))) > 0]
+    occupied = sum(i[1] - i[0] for i in merge_intervals(intervals))
     print(occupied)
 
-    for i in range(4000000):
-        if len((intervals := get_intervals(lines, i))) > 1:
-            print((intervals[0][1] + 1) * 4000000 + i)
-            break
+    acs = set([y - x + r + 1 for (x, y), r in radii.items()])   # Top-left:     (y + sx = x + sy + r + 1) -> (y = x + (sy - sx + r + 1))
+    acs |= set([y - x - r - 1 for (x, y), r in radii.items()])  # Bottom-right: (y + sx = x + sy - r - 1) -> (y = x + (sy - sx - r - 1))
+    bcs = set([x + y + r + 1 for (x, y), r in radii.items()])   # Top-right:    (y - sx = -x + sy + r + 1) -> (y = -x + (sx + sy + r + 1))
+    bcs |= set([x + y - r - 1 for (x, y), r in radii.items()])  # Bottom-left:  (y - sx = -x + sy - r - 1) -> (y = -x + (sx + sy - r - 1))
+
+    for a, b in product(acs, bcs):
+        px, py = (b - a) // 2, (a + b) // 2
+        if 0 < px < 4000000 and 0 < py < 4000000:
+            if all(abs(sx - px) + abs(sy - py) > r for (sx, sy), r in radii.items()):
+                print(px * 4000000 + py)
+                break
 
 
 if __name__ == "__main__":
