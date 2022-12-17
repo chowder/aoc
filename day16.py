@@ -16,16 +16,14 @@ def min_distance(adj_dict, start, end):
         queue.extend([(adj_node, distance + 1) for adj_node in adj_dict[node]])
 
 
-def traverse(nodes, dist, rates, start, seen, minute, rate, max_time, memo):
-    if m := memo.get(key := (start, seen, minute)):
+def traverse(nodes, dist, rates, start, seen, time_left, rate, memo):
+    if m := memo.get(key := (start, seen, time_left)):
         return m
 
-    max_released = (max_time - minute + 1) * rate
-    new_seen = seen | {start}
-
-    for node in nodes - seen:
-        if node != start and minute + (d := dist[start, node] + 1) <= max_time:
-            released = traverse(nodes, dist, rates, node, new_seen, minute + d, rate + rates[node], max_time, memo) + rate * d
+    max_released = time_left * rate
+    for node in nodes - (new_seen := seen | {start}):
+        if time_left - (d := dist[start, node] + 1) >= 1:
+            released = traverse(nodes, dist, rates, node, new_seen, time_left - d, rate + rates[node], memo) + rate * d
             max_released = max(max_released, released)
 
     memo[key] = max_released
@@ -41,14 +39,14 @@ def main():
 
         # Silver
         nodes = set([n for n in adj.keys() if rates[n] > 0])
-        print(traverse(nodes, dist, rates, "AA", frozenset(), 1, 0, 30, {}))
+        print(traverse(nodes, dist, rates, "AA", frozenset(), 30, 0, {}))
 
         # Gold
         max_release = 0
         splits = [(set(c), nodes - set(c)) for i in range(1, (len(nodes) // 2) + 1) for c in combinations(nodes, i)]
         for mine, elephants in splits:
-            mine = traverse(mine, dist, rates, "AA", frozenset(), 1, 0, 26, {})
-            elephants = traverse(elephants, dist, rates, "AA", frozenset(), 1, 0, 26, {})
+            mine = traverse(mine, dist, rates, "AA", frozenset(), 26, 0, {})
+            elephants = traverse(elephants, dist, rates, "AA", frozenset(), 26, 0, {})
             max_release = max(max_release, mine + elephants)
 
         print(max_release)
