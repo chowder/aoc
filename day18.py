@@ -1,4 +1,4 @@
-from collections import deque, defaultdict
+from collections import deque
 
 
 def main():
@@ -17,7 +17,6 @@ def main():
     q = deque()
     seen = set([])
     total = 0
-    air = defaultdict(int)
 
     # Silver
     while unseen := (cubes - seen):
@@ -27,9 +26,6 @@ def main():
                 continue
             adj = [(cube[0] + dx, cube[1] + dy, cube[2] + dz) for dx, dy, dz in directions]
             q.extend(c := [n for n in adj if n in cubes])
-            for n in adj:
-                if n not in cubes:
-                    air[n] += 1
             total += 6 - len(c)
             seen.add(cube)
 
