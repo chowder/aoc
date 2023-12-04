@@ -14,4 +14,4 @@ if __name__ == "__main__":
     main()
 EOF
 
-touch "$ROOT/inputs/2023/day$1.txt"
+touch "$ROOT/2023/inputs/day$1.txt"
