@@ -36,8 +36,8 @@ def is_in_bounds(row, col, sketch) -> bool:
     return 0 <= row < len(sketch) and 0 <= col < len(sketch[0])
 
 
+# why is this so ugly
 def dfs(current: tuple[int, int], sketch, seen, depth):
-    print(current)
     current_tile = sketch[current[0]][current[1]]
     seen.add(current)
     for direction, value in DIRECTIONS.items():
@@ -62,15 +62,23 @@ def main():
     current = (row := next(r for r, l in enumerate(sketch) if "S" in l)), sketch[row].index("S")
 
     path = dfs(current, sketch, set(), 0)
-    print((len(path) - 1) / 2)
+    print((len(path) - 1) // 2)
 
-    for r, line in enumerate(sketch):
-        for c, l in enumerate(line):
-            if (r, c) in path:
-                sys.stdout.write(l)
-            else:
-                sys.stdout.write(" ")
-        sys.stdout.write("\n")
+    area = 0
+    path = set(path)
+    sketch[current[0]] = sketch[current[0]].replace("S", "|")  # Magic
+
+    for row, line in enumerate(sketch):
+        inside = 0
+        for col, letter in enumerate(line):
+            if (row, col) not in path:
+                area += inside
+                continue
+
+            if sketch[row][col] in {"|", "L", "J"}:
+                inside ^= 1
+
+    print(area)
 
 
 if __name__ == "__main__":
