@@ -31,9 +31,9 @@ OPPOSITE = {
 @total_ordering
 @dataclass(frozen=True)
 class State:
-    position: Point
-    direction: Optional[Direction]
-    count: int
+    position: Point = (0, 0)
+    direction: Optional[Direction] = None
+    count: int = 0
 
     def __le__(self, other):
         return True
@@ -54,41 +54,38 @@ class Crucible(State):
 
 class UltraCrucible(State):
     def get_adjacent(self):
-        if self.count < 4:
+        if self.direction is not None and self.count < 4:
             position = self.direction.apply_to(self.position)
             yield UltraCrucible(position, self.direction, self.count + 1)
-        else:
-            for direction in (Direction.RIGHT, Direction.DOWN, Direction.UP, Direction.LEFT):
-                if direction == self.direction and self.count == 10:
-                    continue
-                position = direction.apply_to(self.position)
-                count = self.count + 1 if direction == self.direction else 1
-                yield UltraCrucible(position, direction, count)
+            return
+
+        for direction in (Direction.RIGHT, Direction.DOWN, Direction.UP, Direction.LEFT):
+            if direction == self.direction and self.count == 10:
+                continue
+            if self.direction is not None and direction == OPPOSITE[self.direction]:
+                continue
+            position = direction.apply_to(self.position)
+            count = self.count + 1 if direction == self.direction else 1
+            yield UltraCrucible(position, direction, count)
 
 
-def main():
-    with open("inputs/day17.txt") as f:
-        city = f.read().splitlines()
-
+def minimum_heat_lost(initial, city, min_consecutive=1) -> int:
     height, width = len(city), len(city[0])
+    end = (height - 1, width - 1)
 
     def in_bounds(point: Point):
         return 0 <= point[0] < height and 0 <= point[1] < width
-
-    initial = Crucible(
-        position=(0, 0),
-        direction=None,
-        count=0,
-    )
 
     unvisited = [(0, initial)]
     visited = set()
     distances = {initial: 0}
     while unvisited:
         distance, current = heapq.heappop(unvisited)
-        if current.position == (height - 1, width - 1):
-            print(distance)
-            return
+        if current.position == end:
+            if current.count >= min_consecutive:
+                return distance
+            # Don't explore other nodes from the ending 
+            continue
 
         for adj in current.get_adjacent():
             if adj in visited:
@@ -103,6 +100,14 @@ def main():
                 heapq.heappush(unvisited, (distances[adj], adj))
 
         visited.add(current)
+
+
+def main():
+    with open("inputs/day17.txt") as f:
+        city = f.read().splitlines()
+
+    print(minimum_heat_lost(Crucible(), city))
+    print(minimum_heat_lost(UltraCrucible(), city, min_consecutive=4))
 
 
 if __name__ == "__main__":
