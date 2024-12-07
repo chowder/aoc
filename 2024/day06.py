@@ -27,9 +27,7 @@ def rotate(d: Direction) -> Direction:
 
 
 def move(p: Position, d: Direction, lab: Lab) -> tuple[Position, Direction]:
-    np = next_p(p, d)
-
-    match np:
+    match np := next_p(p, d):
         case (-1, _) | (_, -1):
             raise IndexError("out of bounds")
 
